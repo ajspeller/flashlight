@@ -1,0 +1,7 @@
+{
+  "name": "flashlight",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
