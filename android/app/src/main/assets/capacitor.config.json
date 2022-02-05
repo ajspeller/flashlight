@@ -1,0 +1,6 @@
+{
+	"appId": "com.ajspeller.flashlight",
+	"appName": "flashlight",
+	"webDir": "www",
+	"bundledWebRuntime": false
+}

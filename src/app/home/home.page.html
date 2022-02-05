@@ -1,20 +1,27 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>
-      Blank
-    </ion-title>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
-  <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
-  </div>
+<ion-content>
+  <ng-container *ngIf="!isReady">
+    <div color="primary"><p>Loading</p></div>
+  </ng-container>
+  <ng-container *ngIf="isReady">
+    <div class="row__center">
+      <div class="test-center" (click)="toggle()">
+        <div
+          id="outer-circle"
+          [ngClass]="isTorchOn() ? 'light-on' : 'light-off'"
+        ></div>
+        <!-- <img
+          [src]="isTorchOn() ? 'assets/light_circle.png' : 'assets/dark_circle.png'"
+          alt="Light Circle"
+        /> -->
+        <ion-fab vertical="center" horizontal="center" slot="fixed">
+          <ion-fab-button [ngClass]="isTorchOn() ? '' : 'dark__icon'">
+            <ion-icon
+              [ngClass]="isTorchOn ? 'light__icon' : 'dark__icon'"
+              name="flashlight"
+            ></ion-icon>
+          </ion-fab-button>
+        </ion-fab>
+      </div>
+    </div>
+  </ng-container>
 </ion-content>
