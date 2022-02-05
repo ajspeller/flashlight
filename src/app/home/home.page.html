@@ -9,10 +9,6 @@
           id="outer-circle"
           [ngClass]="isTorchOn() ? 'light-on' : 'light-off'"
         ></div>
-        <!-- <img
-          [src]="isTorchOn() ? 'assets/light_circle.png' : 'assets/dark_circle.png'"
-          alt="Light Circle"
-        /> -->
         <ion-fab vertical="center" horizontal="center" slot="fixed">
           <ion-fab-button [ngClass]="isTorchOn() ? '' : 'dark__icon'">
             <ion-icon
