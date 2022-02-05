@@ -12,7 +12,7 @@ export class AppComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     try {
-      await SplashScreen.show({ showDuration: 3000, autoHide: true });
+      await SplashScreen.show({ showDuration: 5000, autoHide: true });
     } catch (error) {
       console.warn({ error });
     }
