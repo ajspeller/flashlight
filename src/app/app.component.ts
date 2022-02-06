@@ -18,7 +18,7 @@ export class AppComponent implements OnInit {
     }
 
     try {
-      await StatusBar.setBackgroundColor({ color: '#000' });
+      await StatusBar.setBackgroundColor({ color: '#000000' });
     } catch (error) {
       console.warn({ error });
     }
