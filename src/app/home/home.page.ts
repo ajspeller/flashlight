@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 
 import { Flashlight } from '@awesome-cordova-plugins/flashlight/ngx';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { AlertController, Platform } from '@ionic/angular';
-import { of } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -38,6 +38,7 @@ export class HomePage {
       const isAvailable = await this.torch.available();
       console.log({ isAvailable });
       this.torch.toggle();
+      await Haptics.impact({ style: ImpactStyle.Light });
     } catch (err) {
       this.showAlert();
       console.warn({ err });
