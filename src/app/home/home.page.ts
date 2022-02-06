@@ -5,6 +5,18 @@ import { AlertController, Platform } from '@ionic/angular';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
 import { Flashlight } from '@awesome-cordova-plugins/flashlight/ngx';
+import { from, interval } from 'rxjs';
+import {
+  repeat,
+  delay,
+  take,
+  map,
+  concatAll,
+  catchError,
+  finalize,
+  switchMap,
+  tap,
+} from 'rxjs/operators';
 
 @Component({
   selector: 'app-home',
@@ -31,8 +43,9 @@ export class HomePage implements OnDestroy {
         this.isReady = true;
         return this.torch.available();
       })
-      .then((isAvail) => {
+      .then(async (isAvail) => {
         console.log({ isAvail });
+        await this.torch.switchOff();
       })
       .catch((err) => {
         console.warn({ err });
@@ -51,6 +64,65 @@ export class HomePage implements OnDestroy {
       this.showAlert();
       console.warn({ err });
     }
+  }
+
+  async sos() {
+    await this.torch.switchOff();
+    // from([1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1])
+    //   .pipe(
+    //     map((x) => interval(x === 1 ? 500 : 2000).pipe(take(1))),
+    //     concatAll(),
+    //     catchError((error) => {
+    //       console.log({ error });
+    //       throw error;
+    //     }),
+    //     finalize(() => {
+    //       console.log('stop!');
+    //     })
+    //   )
+    //   .subscribe(async (value) => {
+    //     console.log({ value });
+    //     await this.torch.toggle();
+    //   });
+
+    // from([1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1])
+    //   .pipe(
+    //     map((x) => interval(x === 1 ? 500 : 2000).pipe(take(1))),
+    //     concatAll(),
+    //     repeat(0)
+    //   )
+    //   .subscribe((x) => console.log(x));
+
+    const lightsAndDelays = from([
+      'off',
+      501,
+      'off',
+      501,
+      'off',
+      501,
+      'off',
+      1000,
+      'off',
+      1000,
+      'off',
+      1000,
+      'off',
+      'off',
+      'off',
+    ]);
+
+    const higerOrder = lightsAndDelays.pipe(
+      switchMap((sequence) => interval(sequence === 'off' ? 500 : +sequence)),
+      tap((ms) => console.log(ms))
+    );
+    // const firstOrder = higerOrder.pipe(repeat(2));
+    higerOrder.subscribe(
+      async (x) => await this.torch.toggle(),
+      (err) => {},
+      () => {
+        console.log('completed!');
+      }
+    );
   }
 
   isTorchOn(): boolean {

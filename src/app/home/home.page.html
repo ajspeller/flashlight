@@ -20,4 +20,16 @@
       </div>
     </div>
   </ng-container>
+  <ng-container>
+    <div (click)="sos()">
+      <ion-fab vertical="center" horizontal="start" slot="fixed">
+        <ion-fab-button [ngClass]="isTorchOn() ? '' : 'dark__icon'">
+          <ion-icon
+            [ngClass]="isTorchOn ? 'light__icon' : 'dark__icon'"
+            name="help-buoy"
+          ></ion-icon>
+        </ion-fab-button>
+      </ion-fab>
+    </div>
+  </ng-container>
 </ion-content>
