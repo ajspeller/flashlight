@@ -1,59 +1,63 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+
+import { Subject, Subscription, timer } from 'rxjs';
+import { switchMap, tap, map } from 'rxjs/operators';
 
 import { AlertController, Platform } from '@ionic/angular';
 
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
 import { Flashlight } from '@awesome-cordova-plugins/flashlight/ngx';
-import { from, interval } from 'rxjs';
-import {
-  repeat,
-  delay,
-  take,
-  map,
-  concatAll,
-  catchError,
-  finalize,
-  switchMap,
-  tap,
-} from 'rxjs/operators';
 
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
 })
-export class HomePage implements OnDestroy {
+export class HomePage implements OnInit, OnDestroy {
   isReady = false;
   audio: HTMLAudioElement;
+  timer$ = new Subject<number>();
+  subscription: Subscription;
 
   constructor(
     private torch: Flashlight,
     private platform: Platform,
     private alertController: AlertController
-  ) {
-    this.platform
-      .ready()
-      .then((result: string) => {
-        this.audio = new Audio();
-        this.audio.src = './assets/119415__joedeshon__rocker-switch.mp3';
-        this.audio.load();
+  ) {}
 
-        console.log({ result });
-        this.isReady = true;
-        return this.torch.available();
-      })
-      .then(async (isAvail) => {
-        console.log({ isAvail });
-        await this.torch.switchOff();
-      })
-      .catch((err) => {
-        console.warn({ err });
-        this.showAlert();
-      });
+  async ngOnInit(): Promise<void> {
+    this.audio = new Audio();
+    this.audio.src = './assets/119415__joedeshon__rocker-switch.mp3';
+    this.audio.load();
+
+    try {
+      const result = await this.platform.ready();
+      console.log({ result });
+      this.isReady = true;
+
+      const isAvail = await this.torch.available();
+      console.log({ isAvail });
+
+      await this.torch.switchOff();
+
+      this.subscription = this.timer$
+        .pipe(
+          switchMap((value) => timer(value * 500)),
+          tap(async () => {})
+        )
+        .subscribe(async (v) => {
+          await this.torch.toggle();
+          this.timer$.next(1);
+        });
+    } catch (error) {
+      console.warn({ error });
+      this.showAlert();
+    }
   }
 
   async toggle() {
+    this.subscription.unsubscribe();
     try {
       const isAvailable = await this.torch.available();
       console.log({ isAvailable });
@@ -66,64 +70,26 @@ export class HomePage implements OnDestroy {
     }
   }
 
+  sleep(ms) {
+    // return new Promise((resolve) => setTimeout(resolve, ms));
+    return timer(ms).toPromise();
+  }
+
   async sos() {
     await this.torch.switchOff();
-    // from([1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1])
-    //   .pipe(
-    //     map((x) => interval(x === 1 ? 500 : 2000).pipe(take(1))),
-    //     concatAll(),
-    //     catchError((error) => {
-    //       console.log({ error });
-    //       throw error;
-    //     }),
-    //     finalize(() => {
-    //       console.log('stop!');
-    //     })
-    //   )
-    //   .subscribe(async (value) => {
-    //     console.log({ value });
-    //     await this.torch.toggle();
-    //   });
+    console.log({ isOn: this.torch.isSwitchedOn() });
 
-    // from([1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1])
-    //   .pipe(
-    //     map((x) => interval(x === 1 ? 500 : 2000).pipe(take(1))),
-    //     concatAll(),
-    //     repeat(0)
-    //   )
-    //   .subscribe((x) => console.log(x));
+    for (const i of [1, 1, 1, 1, 1, 3, 3, 1, 3, 1, 3, 3, 1, 1, 1, 1, 1, 7]) {
+      console.log(`Waiting ${i * 500} ms...`);
+      await this.torch.toggle();
+      await this.sleep(i * 500);
 
-    const lightsAndDelays = from([
-      'off',
-      501,
-      'off',
-      501,
-      'off',
-      501,
-      'off',
-      1000,
-      'off',
-      1000,
-      'off',
-      1000,
-      'off',
-      'off',
-      'off',
-    ]);
+      console.log({ i, isOn: this.torch.isSwitchedOn() });
+    }
 
-    const higerOrder = lightsAndDelays.pipe(
-      switchMap((sequence) => interval(sequence === 'off' ? 500 : +sequence)),
-      tap((ms) => console.log(ms))
-    );
-    // const firstOrder = higerOrder.pipe(repeat(2));
-    higerOrder.subscribe(
-      async (x) => await this.torch.toggle(),
-      (err) => {},
-      () => {
-        console.log('completed!');
-      }
-    );
+    console.log('Done');
   }
+
 
   isTorchOn(): boolean {
     return this.torch.isSwitchedOn();
